@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kuis Matematika SMA Kelas 12</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body{font-family:Arial,sans-serif;background:#eff6ff}
+.question-nav{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:7px}
+.question-nav button{min-height:38px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#374151;font-weight:700;cursor:pointer}
+.question-nav button:hover{border-color:#2563eb}
+.question-nav button.current{background:#dbeafe;border:2px solid #2563eb;color:#1d4ed8}
+.question-nav button.answered{background:#f3f4f6;border-color:#9ca3af}
+.question-nav button.doubtful{background:#facc15;border-color:#eab308;color:#713f12}
+textarea{resize:vertical;min-height:140px}
+@media(max-width:600px){.question-nav{grid-template-columns:repeat(5,minmax(0,1fr))}}
+</style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4">
+<div class="bg-white rounded-2xl shadow-xl max-w-3xl w-full p-6 md:p-8">
+
+<section id="start" class="text-center py-8">
+<h1 class="text-3xl md:text-4xl font-bold text-blue-800 mb-3">Kuis Matematika SMA Kelas 12 📐</h1>
+<p class="text-blue-600 font-semibold mb-2">35 Soal • 30 Pilihan Ganda + 5 Esai</p>
+<p class="text-gray-600 mb-7">Masukkan nama dan kelas untuk memulai kuis.</p>
+
+<div class="max-w-md mx-auto space-y-4 text-left">
+<input id="name" class="w-full p-3 border rounded-xl" placeholder="Nama lengkap" autocomplete="name">
+<input id="kelas" class="w-full p-3 border rounded-xl" placeholder="Kelas, contoh: XII IPA 1">
+<button id="startBtn" type="button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl">Mulai Kuis</button>
+<p id="error" class="hidden text-red-600 text-sm text-center">Nama dan kelas wajib diisi.</p>
+</div>
+</section>
+
+<section id="quiz" class="hidden">
+<div class="border-b pb-4 mb-5">
+<div class="flex flex-wrap items-center justify-between gap-3">
+<div>
+<div id="number" class="text-lg font-bold text-gray-800">Soal nomor 1</div>
+<div id="typeLabel" class="text-xs text-gray-500 mt-1">Pilihan Ganda</div>
+</div>
+
+<div class="flex items-center gap-2">
+<div class="px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm">
+<span class="text-gray-500">Sisa Waktu:</span>
+<span id="timer" class="font-bold text-blue-700 ml-1">01:30:00</span>
+</div>
+<button id="questionListBtn" type="button" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-xl">Daftar Soal</button>
+</div>
+</div>
+
+<div class="mt-3 text-sm">
+<span id="player" class="font-bold text-blue-700"></span>
+<span class="text-gray-400 mx-1">•</span>
+<span id="classPlayer" class="text-gray-500"></span>
+</div>
+</div>
+
+<div id="questionNavPanel" class="hidden mb-5 p-4 border border-gray-200 rounded-xl bg-gray-50">
+<div class="font-bold text-gray-800 mb-3">Daftar Soal</div>
+<div id="questionNav" class="question-nav"></div>
+<div class="flex flex-wrap gap-3 mt-4 text-xs text-gray-600">
+<span>⬜ Belum dijawab</span>
+<span>🔵 Soal aktif</span>
+<span>🟨 Ragu-ragu</span>
+</div>
+</div>
+
+<h2 id="question" class="text-lg md:text-xl font-semibold text-gray-800 mb-6"></h2>
+<div id="options" class="space-y-3"></div>
+
+<div class="mt-5 p-3 rounded-xl bg-gray-50 border border-gray-200">
+<div class="flex flex-wrap items-center justify-between gap-3">
+<span id="status" class="text-sm text-gray-500">Belum menjawab</span>
+<button id="doubtBtn" type="button" class="border border-yellow-400 text-yellow-700 bg-yellow-50 hover:bg-yellow-100 font-semibold py-2 px-4 rounded-lg">⚠️ Ragu-ragu</button>
+</div>
+</div>
+
+<div class="flex justify-between items-center mt-4 gap-3">
+<button id="prev" type="button" class="border border-gray-300 bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed text-gray-700 font-semibold py-2 px-5 rounded-lg">← Sebelumnya</button>
+<button id="next" type="button" disabled class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded-lg">Lanjut</button>
+</div>
+</section>
+
+<section id="result" class="hidden">
+<div class="text-center py-4">
+<h2 class="text-3xl font-bold text-blue-800">Kuis Selesai! 🎉</h2>
+<p id="resultName" class="text-xl font-bold text-blue-700 mt-4"></p>
+<p id="resultClass" class="text-gray-500"></p>
+
+<div class="bg-blue-50 rounded-2xl p-6 my-6">
+<div id="score" class="text-6xl font-extrabold text-blue-600">0</div>
+<div class="text-gray-500">/ 100</div>
+<p id="scoreDetail" class="text-sm text-gray-600 mt-2"></p>
+<p id="feedback" class="font-semibold text-blue-800 mt-3"></p>
+</div>
+
+<div id="saveStatus" class="text-sm"></div>
+
+<div id="doubtResult" class="mt-4 p-4 rounded-xl bg-yellow-50 border border-yellow-200 text-left"></div>
+</div>
+
+<h3 class="text-2xl font-bold text-blue-800 mb-4">Hasil Jawaban 📚</h3>
+<p class="text-sm text-gray-500 mb-4">Jawaban benar/salah ditampilkan tanpa kunci jawaban.</p>
+<div id="review" class="space-y-4"></div>
+
+<div class="text-center mt-8">
+<button id="retry" type="button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full">Ulangi Quiz</button>
+</div>
+</section>
+
+</div>
+
+<script>
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx9FrvVW05YwLZYjK4k066cKT-xnZQgA3lOPctHMJMuhI8T8d9OHLm4VunB_av7yvtewQ/exec";
+
+const questions = [
+{type:"pg",q:"Diketahui f(x)=2x²−3x+1. Nilai f(−2) adalah ...",o:["3","7","15","19"],c:2,r:"f(−2)=2(−2)²−3(−2)+1=15."},
+{type:"pg",q:"Jika f(x)=3x−5 dan g(x)=x²+2, maka (f∘g)(2) adalah ...",o:["7","13","17","19"],c:1,r:"g(2)=6, lalu f(6)=13."},
+{type:"pg",q:"Diketahui A=[[2,1],[3,4]]. Determinan A adalah ...",o:["−5","−2","5","11"],c:2,r:"det(A)=ad−bc=(2)(4)−(1)(3)=5."},
+{type:"pg",q:"Jika A=[[1,2],[0,3]] dan B=[[2,1],[4,0]], elemen (AB)₁₁ adalah ...",o:["6","8","10","12"],c:2,r:"(AB)₁₁=(1)(2)+(2)(4)=10."},
+{type:"pg",q:"Nilai lim(x→2) (x²−4)/(x−2) adalah ...",o:["0","2","4","6"],c:2,r:"x²−4=(x−2)(x+2), sehingga limit=4."},
+{type:"pg",q:"Nilai lim(x→0) sin x/x adalah ...",o:["0","1","−1","∞"],c:1,r:"Limit trigonometri dasar: lim(x→0) sin x/x=1."},
+{type:"pg",q:"Turunan pertama f(x)=4x³−5x²+2x−7 adalah ...",o:["12x²−10x+2","12x²−5x+2","4x²−10x+2","12x³−10x²+2"],c:0,r:"Gunakan (xⁿ)'=nxⁿ⁻¹, sehingga f'(x)=12x²−10x+2."},
+{type:"pg",q:"Gradien garis singgung y=x²+3x−2 pada x=2 adalah ...",o:["5","6","7","8"],c:2,r:"y'=2x+3, maka y'(2)=7."},
+{type:"pg",q:"f(x)=x³−6x²+9x+1 memiliki titik stasioner ketika x= ...",o:["1 dan 2","1 dan 3","2 dan 3","3 dan 4"],c:1,r:"f'(x)=3(x−1)(x−3), jadi x=1 dan x=3."},
+{type:"pg",q:"Nilai maksimum f(x)=−x²+6x−5 adalah ...",o:["3","4","5","6"],c:1,r:"x=−b/(2a)=3, lalu f(3)=4."},
+{type:"pg",q:"∫(6x²−4x+3)dx adalah ...",o:["2x³−2x²+3x+C","6x³−4x²+3x+C","2x³−4x²+3+C","3x³−2x²+3x+C"],c:0,r:"Integralnya 2x³−2x²+3x+C."},
+{type:"pg",q:"Nilai ∫₀²(3x²+2x)dx adalah ...",o:["8","10","12","14"],c:2,r:"∫(3x²+2x)dx=x³+x²; dari 0 sampai 2 =12."},
+{type:"pg",q:"Luas di bawah kurva y=2x dari x=0 sampai x=3 adalah ...",o:["6","9","12","18"],c:1,r:"L=∫₀³2x dx=[x²]₀³=9."},
+{type:"pg",q:"Barisan aritmetika a=7 dan b=4. Suku ke-15 adalah ...",o:["59","61","63","65"],c:2,r:"Uₙ=a+(n−1)b=7+14(4)=63."},
+{type:"pg",q:"Jumlah 20 suku pertama barisan aritmetika a=3,b=5 adalah ...",o:["980","1010","1050","1060"],c:1,r:"Sₙ=n/2[2a+(n−1)b]=10(101)=1010."},
+{type:"pg",q:"Suku ke-8 barisan geometri 3,6,12,... adalah ...",o:["192","256","384","768"],c:2,r:"Uₙ=arⁿ⁻¹=3(2⁷)=384."},
+{type:"pg",q:"Jumlah tak hingga deret geometri a=12,r=1/3 adalah ...",o:["15","16","18","24"],c:2,r:"S∞=a/(1−r)=12/(2/3)=18."},
+{type:"pg",q:"Peluang muncul tepat 2 gambar saat koin dilempar 3 kali adalah ...",o:["1/8","3/8","1/2","5/8"],c:1,r:"P=C(3,2)(1/2)³=3/8."},
+{type:"pg",q:"Dari 8 siswa dipilih 3 sebagai perwakilan. Banyak cara adalah ...",o:["24","48","56","336"],c:2,r:"C(8,3)=8!/(3!5!)=56."},
+{type:"pg",q:"Banyak susunan berbeda huruf MATEMATIKA adalah ...",o:["15120","30240","75600","151200"],c:3,r:"10!/(3!2!2!)=151200."},
+{type:"pg",q:"Persamaan lingkaran pusat (2,−3), jari-jari 5 adalah ...",o:["(x−2)²+(y+3)²=25","(x+2)²+(y−3)²=25","(x−2)²+(y−3)²=5","(x+2)²+(y+3)²=5"],c:0,r:"(x−h)²+(y−k)²=r²."},
+{type:"pg",q:"Jarak A(2,3) ke B(8,11) adalah ...",o:["8","9","10","12"],c:2,r:"d=√[(8−2)²+(11−3)²]=10."},
+{type:"pg",q:"Jika a=(2,−1,3) dan b=(1,4,−2), a·b adalah ...",o:["−8","−4","4","8"],c:0,r:"a·b=2−4−6=−8."},
+{type:"pg",q:"sin30°+cos60° = ...",o:["0","1/2","1","√3"],c:2,r:"1/2+1/2=1."},
+{type:"pg",q:"Jika log₂(x−1)=3, nilai x adalah ...",o:["7","8","9","10"],c:2,r:"x−1=2³=8, sehingga x=9."},
+{type:"pg",q:"Jika 2ˣ=32, maka x= ...",o:["4","5","6","8"],c:1,r:"32=2⁵, jadi x=5."},
+{type:"pg",q:"Penyelesaian persamaan x²−5x+6=0 adalah ...",o:["x=1,6","x=2,3","x=−2,−3","x=3,4"],c:1,r:"Faktorkan (x−2)(x−3)=0, jadi x=2 atau 3."},
+{type:"pg",q:"Jika matriks A=[[1,2],[3,4]], maka trace(A) adalah ...",o:["3","4","5","7"],c:2,r:"trace adalah jumlah diagonal utama: 1+4=5."},
+{type:"pg",q:"Rata-rata dari data 6, 8, 7, 9, 10 adalah ...",o:["7","8","9","10"],c:1,r:"Mean=(6+8+7+9+10)/5=40/5=8."},
+{type:"pg",q:"Varians populasi dari data 2,4,6 adalah ...",o:["2","8/3","4","6"],c:1,r:"Mean=4; varians=[(−2)²+0²+2²]/3=8/3."},
+
+{type:"essay",q:"Tentukan turunan pertama dari f(x)=3x²−4x+7.",accepted:["6x-4","6x − 4","6x-4."],r:"f'(x)=6x−4."},
+{type:"essay",q:"Hitung nilai ∫₀² (2x+3) dx.",accepted:["10","10."],r:"∫(2x+3)dx=x²+3x. Dari 0 sampai 2: 4+6=10."},
+{type:"essay",q:"Sebuah barisan aritmetika memiliki suku pertama 5 dan beda 3. Tentukan suku ke-10.",accepted:["32","32."],r:"U₁₀=5+(10−1)3=32."},
+{type:"essay",q:"Tentukan determinan matriks [[4,2],[3,1]].",accepted:["-2","−2","-2.","−2."],r:"det(A)=(4)(1)−(2)(3)=−2."},
+{type:"essay",q:"Tentukan himpunan penyelesaian persamaan x²−7x+12=0.",accepted:["3 dan 4","3,4","x=3 dan x=4","x=3, x=4"],r:"(x−3)(x−4)=0, sehingga x=3 atau x=4."}
+];
+
+let current = 0;
+let answers = [];
+let doubtful = [];
+let playerName = "";
+let playerClass = "";
+let timeLeft = 90 * 60;
+let timerInterval = null;
+let quizFinished = false;
+
+const $ = id => document.getElementById(id);
+
+document.addEventListener("DOMContentLoaded", () => {
+$("startBtn").addEventListener("click", startQuiz);
+$("prev").addEventListener("click", previousQuestion);
+$("next").addEventListener("click", nextQuestion);
+$("doubtBtn").addEventListener("click", toggleDoubt);
+$("retry").addEventListener("click", resetQuiz);
+$("questionListBtn").addEventListener("click", toggleQuestionList);
+});
+
+function startQuiz(){
+playerName=$("name").value.trim();
+playerClass=$("kelas").value.trim();
+
+if(!playerName || !playerClass){
+$("error").classList.remove("hidden");
+return;
+}
+
+$("error").classList.add("hidden");
+answers=new Array(questions.length).fill(null);
+doubtful=new Array(questions.length).fill(false);
+current=0;
+quizFinished=false;
+
+$("player").textContent=playerName;
+$("classPlayer").textContent=playerClass;
+$("start").classList.add("hidden");
+$("result").classList.add("hidden");
+$("quiz").classList.remove("hidden");
+
+startTimer();
+showQuestion();
+}
+
+function renderQuestionNav(){
+const nav=$("questionNav");
+nav.innerHTML="";
+
+questions.forEach((q,i)=>{
+const button=document.createElement("button");
+button.type="button";
+button.textContent=i+1;
+
+if(doubtful[i]){
+button.className="doubtful";
+}else if(i===current){
+button.className="current";
+}else if(answers[i]!==null){
+button.className="answered";
+}
+
+button.addEventListener("click",()=>{
+if(quizFinished)return;
+current=i;
+showQuestion();
+$("questionNavPanel").classList.add("hidden");
+});
+
+nav.appendChild(button);
+});
+}
+
+function toggleQuestionList(){
+$("questionNavPanel").classList.toggle("hidden");
+renderQuestionNav();
+}
+
+function showQuestion(){
+renderQuestionNav();
+
+const q=questions[current];
+$("number").textContent=`Soal nomor ${current+1}${doubtful[current]?" • ⚠️ Ragu-ragu":""}`;
+$("typeLabel").textContent=q.type==="pg"?"Pilihan Ganda":"Esai";
+
+const box=$("options");
+box.innerHTML="";
+
+if(q.type==="pg"){
+q.o.forEach((opt,i)=>{
+const button=document.createElement("button");
+button.type="button";
+button.className=answers[current]===i
+?"w-full text-left p-4 rounded-xl border-2 border-blue-400 bg-blue-50 transition flex justify-between items-center"
+:"w-full text-left p-4 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition flex justify-between items-center";
+
+const text=document.createElement("span");
+text.textContent=opt;
+
+const letter=document.createElement("span");
+letter.className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-xs font-bold";
+letter.textContent=String.fromCharCode(65+i);
+
+button.appendChild(text);
+button.appendChild(letter);
+button.addEventListener("click",()=>choose(i));
+box.appendChild(button);
+});
+}else{
+const textarea=document.createElement("textarea");
+textarea.id="essayAnswer";
+textarea.className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300";
+textarea.placeholder="Tulis jawaban esai kamu di sini...";
+textarea.value=answers[current] || "";
+textarea.addEventListener("input",()=>{
+answers[current]=textarea.value;
+updateStatus();
+});
+box.appendChild(textarea);
+}
+
+updateStatus();
+
+$("doubtBtn").textContent=doubtful[current]?"⚠️ Batalkan Ragu-ragu":"⚠️ Ragu-ragu";
+$("doubtBtn").className=doubtful[current]
+?"border border-yellow-500 text-yellow-800 bg-yellow-100 hover:bg-yellow-200 font-semibold py-2 px-4 rounded-lg"
+:"border border-yellow-400 text-yellow-700 bg-yellow-50 hover:bg-yellow-100 font-semibold py-2 px-4 rounded-lg";
+
+$("prev").disabled=current===0;
+$("next").disabled=!isAnswered(current);
+$("next").textContent=current===questions.length-1?"Selesai":"Lanjut";
+}
+
+function isAnswered(index){
+return answers[index]!==null && String(answers[index]).trim()!=="";
+}
+
+function updateStatus(){
+if(!isAnswered(current)){
+$("status").textContent="Belum menjawab";
+$("status").className="text-sm text-gray-500";
+}else if(doubtful[current]){
+$("status").textContent="⚠️ Jawaban ditandai ragu-ragu";
+$("status").className="text-sm font-semibold text-yellow-700";
+}else{
+$("status").textContent="✓ Jawaban dipilih";
+$("status").className="text-sm font-semibold text-blue-700";
+}
+}
+
+function choose(i){
+answers[current]=i;
+showQuestion();
+}
+
+function toggleDoubt(){
+if(!isAnswered(current)){
+$("status").textContent="Jawab soal terlebih dahulu, lalu tandai Ragu-ragu.";
+$("status").className="text-sm font-semibold text-orange-600";
+return;
+}
+
+doubtful[current]=!doubtful[current];
+showQuestion();
+}
+
+function previousQuestion(){
+if(current>0){
+current--;
+showQuestion();
+}
+}
+
+function nextQuestion(){
+if(!isAnswered(current)){
+$("status").textContent="Jawab soal terlebih dahulu sebelum melanjutkan.";
+$("status").className="text-sm font-semibold text-orange-600";
+return;
+}
+
+if(current<questions.length-1){
+current++;
+showQuestion();
+}else{
+showResult(false);
+}
+}
+
+function startTimer(){
+clearInterval(timerInterval);
+timeLeft=90*60;
+updateTimer();
+
+timerInterval=setInterval(()=>{
+timeLeft--;
+
+if(timeLeft<=0){
+timeLeft=0;
+updateTimer();
+clearInterval(timerInterval);
+showResult(true);
+return;
+}
+
+updateTimer();
+},1000);
+}
+
+function updateTimer(){
+const h=Math.floor(timeLeft/3600);
+const m=Math.floor((timeLeft%3600)/60);
+const s=timeLeft%60;
+
+$("timer").textContent=
+String(h).padStart(2,"0")+":"+
+String(m).padStart(2,"0")+":"+
+String(s).padStart(2,"0");
+}
+
+function normalizeAnswer(value){
+return String(value)
+.toLowerCase()
+.replace(/[.,!?;:]/g," ")
+.replace(/\s+/g," ")
+.trim();
+}
+
+function essayCorrect(answer,accepted){
+const normalized=normalizeAnswer(answer);
+return accepted.some(item=>normalizeAnswer(item)===normalized);
+}
+
+function getCorrect(index){
+const q=questions[index];
+
+if(q.type==="pg"){
+return answers[index]===q.c;
+}
+
+return essayCorrect(answers[index] || "",q.accepted);
+}
+
+function showResult(timeUp){
+if(quizFinished)return;
+
+quizFinished=true;
+clearInterval(timerInterval);
+
+let correct=0;
+let correctPG=0;
+let correctEssay=0;
+
+questions.forEach((q,i)=>{
+if(getCorrect(i)){
+correct++;
+if(q.type==="pg")correctPG++;
+else correctEssay++;
+}
+});
+
+const score=Math.round(correct/questions.length*100);
+
+const doubtfulNumbers=doubtful
+.map((isDoubt,i)=>isDoubt?i+1:null)
+.filter(n=>n!==null);
+
+$("quiz").classList.add("hidden");
+$("result").classList.remove("hidden");
+
+$("resultName").textContent=playerName;
+$("resultClass").textContent=playerClass;
+$("score").textContent=score;
+$("scoreDetail").textContent=`Benar: ${correct} dari ${questions.length} soal • PG: ${correctPG}/30 • Esai: ${correctEssay}/5`;
+
+$("feedback").textContent=
+score===100?"Sempurna! 🏆":
+score>=80?"Sangat baik! 🔥":
+score>=70?"Bagus! Tinggal perkuat lagi. 👍":
+"Terus latihan dan pelajari kembali materinya. 💪";
+
+if(timeUp){
+$("saveStatus").textContent="⏰ Waktu habis. Jawaban langsung dikumpulkan dan dinilai.";
+$("saveStatus").className="text-sm font-semibold text-orange-600";
+}
+
+$("doubtResult").innerHTML=doubtfulNumbers.length
+?`<p class="font-bold text-yellow-800">⚠️ Soal yang ditandai Ragu-ragu</p>
+<p class="text-yellow-900 mt-1">Nomor: ${doubtfulNumbers.join(", ")}</p>
+<p class="text-xs text-yellow-700 mt-1">Total: ${doubtfulNumbers.length} soal</p>`
+:`<p class="font-bold text-gray-700">✓ Tidak ada soal yang ditandai Ragu-ragu.</p>`;
+
+$("review").innerHTML="";
+
+questions.forEach((q,i)=>{
+const div=document.createElement("div");
+const correctAnswer=getCorrect(i);
+
+div.className=correctAnswer
+?"p-5 rounded-xl border-2 border-green-300 bg-green-50"
+:"p-5 rounded-xl border-2 border-red-300 bg-red-50";
+
+const userAnswer=answers[i]===null
+?"Tidak dijawab"
+:q.type==="pg"
+?q.o[answers[i]]
+:String(answers[i]||"").trim() || "Tidak dijawab";
+
+div.innerHTML=`
+<div class="flex items-start justify-between gap-3 mb-3">
+<p class="font-bold text-gray-800">${i+1}. ${q.q}</p>
+<span class="${correctAnswer?"bg-green-600":"bg-red-600"} text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
+${correctAnswer?"BENAR ✓":"SALAH ✗"}
+</span>
+</div>
+<div class="space-y-2 text-sm">
+<p class="${correctAnswer?"text-green-800":"text-red-800"} font-semibold">
+<b>Jawaban Anda:</b> ${escapeHtml(userAnswer)}
+</p>
+${q.type==="essay"
+?`<p class="text-gray-600"><b>Tipe:</b> Esai • Dinilai otomatis berdasarkan jawaban yang sesuai.</p>`
+:""}
+</div>`;
+
+$("review").appendChild(div);
+});
+
+sendResult(score,correct,correctPG,correctEssay);
+}
+
+function escapeHtml(value){
+return String(value)
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+}
+
+function sendResult(score,correct,correctPG,correctEssay){
+if(!GOOGLE_SCRIPT_URL){
+if(!$("saveStatus").textContent){
+$("saveStatus").textContent="Nilai selesai dihitung.";
+$("saveStatus").className="text-sm text-green-600";
+}
+return;
+}
+
+const doubtfulNumbers=doubtful
+.map((isDoubt,i)=>isDoubt?i+1:null)
+.filter(n=>n!==null);
+
+const essayAnswers=questions
+.map((q,i)=>q.type==="essay"?String(answers[i]||"").trim():"")
+.filter(Boolean);
+
+const data={
+nama:playerName,
+kelas:playerClass,
+skor:score,
+benar:correct,
+salah:questions.length-correct,
+jumlahRagu:doubtfulNumbers.length,
+raguRagu:doubtfulNumbers.length?doubtfulNumbers.join(", "):"-",
+waktu:new Date().toLocaleString("id-ID"),
+benarPG:correctPG,
+benarEssay:correctEssay,
+totalSoal:questions.length,
+essay1:essayAnswers[0]||"",
+essay2:essayAnswers[1]||"",
+essay3:essayAnswers[2]||"",
+essay4:essayAnswers[3]||"",
+essay5:essayAnswers[4]||""
+};
+
+fetch(GOOGLE_SCRIPT_URL,{
+method:"POST",
+mode:"no-cors",
+headers:{"Content-Type":"text/plain"},
+body:JSON.stringify(data)
+})
+.then(()=>{
+$("saveStatus").textContent=
+$("saveStatus").textContent ||
+"✓ Nilai berhasil dikirim ke sistem.";
+$("saveStatus").className="text-sm text-green-600";
+})
+.catch(()=>{
+$("saveStatus").textContent="Nilai selesai dihitung, tetapi pengiriman ke Google Sheets gagal.";
+$("saveStatus").className="text-sm text-red-600";
+});
+}
+
+function resetQuiz(){
+clearInterval(timerInterval);
+
+current=0;
+answers=[];
+doubtful=[];
+playerName="";
+playerClass="";
+timeLeft=90*60;
+quizFinished=false;
+
+$("result").classList.add("hidden");
+$("quiz").classList.add("hidden");
+$("start").classList.remove("hidden");
+$("name").value="";
+$("kelas").value="";
+$("error").classList.add("hidden");
+$("questionNavPanel").classList.add("hidden");
+$("timer").textContent="01:30:00";
+}
+</script>
+</body>
+</html>
